@@ -28,6 +28,17 @@ component fifo_generator_1 IS
      
 end component;
 
+
+component  D_FlipFlop is
+    Port (
+        clk   : in  STD_LOGIC;      
+        reset : in  STD_LOGIC;      
+        D     : in  STD_LOGIC_VECTOR(7 downto 0); 
+        Q     : out STD_LOGIC_VECTOR(7 downto 0) 
+    );
+    end component;
+
+
 signal clk_TB : std_logic := '0';
 signal rest_TB : std_logic;
 signal din_TB : std_logic_vector(7 downto 0);
@@ -40,6 +51,9 @@ signal empty_TB : std_logic;
 signal prog_full_TB : std_logic;
 signal  wr_rst_busy_TB : std_logic;
 signal  rd_rst_busy_TB : std_logic;
+
+signal D_TB : std_logic_vector(7 downto 0);
+signal Q_TB : std_logic_vector(7 downto 0);
 
 
 
@@ -63,79 +77,32 @@ begin
        );
        
        
-   clk_process: process
-    begin
-            
-           clk_TB <= '0';
-           wait for clk_period/2;
-           clk_TB <= '1'; 
-           wait for clk_period/2;  
-           
-    end process clk_process;   
+   u2: fifo_generator_1
+        port map(
+        clk => clk_TB,
+        rst => rest_TB,
+        din => din_TB,
+        wr_en => wr_TB,
+        rd_en => rd_TB,
+        prog_full_thresh  =>  prog_full_thresh_TB,
+        dout  => dout_TB,
+        full  => full_TB,
+        empty  => empty_TB,
+        prog_full => prog_full_TB
+       );
+       
+       
+     u3: D_FlipFlop 
+    Port map (
+        clk   => clk_TB,     
+        reset => rest_TB,    
+        D     => D_TB, 
+        Q     => Q_TB
+    );
     
-   sim_process: process
-    begin
-            wr_TB <= '0';
-            rd_TB <= '0';
-            rest_TB <= '1';
-            din_TB <= "00000000";
-            
-            wait for clk_period;
-            rest_TB <= '0';
-            
-            
-            if ( full_TB ='1' and empty_TB ='1' ) then
-            
-                wait for clk_period*10;
-                
-                wr_TB <='1';
-                din_TB <= "00000001";
-        
-                wait for clk_period;
-                
-                
-                din_TB <= "00000011";
-        
-                wait for clk_period;
-                
-                
-                din_TB <= "00000111";
-        
-                wait for clk_period;
-                
-                
-                din_TB <= "00001111";
-        
-                wait for clk_period;
-                
-                
-                
-                if (full_TB='0') then
-                
-                    din_TB <= "00000010";
-                    wr_TB <='1';
-                    wait for clk_period;
-                else
-                    din_TB <= "00000000";
-                    wr_TB <= '0';
-                   
-                end if; 
-                
-                
-            end if;
-            
-                wr_TB <= '0';
-                din_TB <= "00000000";
-                wait for clk_period;
-                rd_TB <= '1';
-                wait for clk_period*6;
-                
-                
-                wait;
-            
-     end process;
-             
-         
+       
+       
+       
 
 
 end Behavioral;

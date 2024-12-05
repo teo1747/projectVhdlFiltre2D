@@ -1,0 +1,6 @@
+# compile vhdl design source files
+vhdl xil_defaultlib  \
+"../../../../Filtre2D_Deogracias.srcs/sim_1/new/Unity_Test.vhd" \
+
+# Do not sort compile order
+nosort

@@ -1,7 +1,0 @@
-Running: xsim.dir/Unity_Test_behav/xsimk.exe -simmode gui -wdb Unity_Test_behav.wdb -simrunnum 0 -socket 50600
-Design successfully loaded
-Design Loading Memory Usage: 6740 KB (Peak: 6740 KB)
-Design Loading CPU Usage: 390 ms
-Simulation completed
-Simulation Memory Usage: 7508 KB (Peak: 7508 KB)
-Simulation CPU Usage: 452 ms

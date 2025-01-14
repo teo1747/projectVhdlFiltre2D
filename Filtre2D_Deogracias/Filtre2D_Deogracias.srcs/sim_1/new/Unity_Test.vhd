@@ -1,8 +1,8 @@
 
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
+library ieee;
+use ieee.std_logic_1164.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 entity Unity_Test is
 
@@ -29,14 +29,6 @@ component fifo_generator_1 IS
 end component;
 
 
-component  D_FlipFlop is
-    Port (
-        clk   : in  STD_LOGIC;      
-        reset : in  STD_LOGIC;      
-        D     : in  STD_LOGIC_VECTOR(7 downto 0); 
-        Q     : out STD_LOGIC_VECTOR(7 downto 0) 
-    );
-    end component;
 
 
 signal clk_TB : std_logic := '0';
@@ -52,12 +44,14 @@ signal prog_full_TB : std_logic;
 signal  wr_rst_busy_TB : std_logic;
 signal  rd_rst_busy_TB : std_logic;
 
-signal D_TB : std_logic_vector(7 downto 0);
-signal Q_TB : std_logic_vector(7 downto 0);
 
 
+  signal I1 : std_logic_vector (7 downto 0);
+  signal CLK : std_logic;
+  signal O1 : std_logic_vector (7 downto 0); 
+  signal DATA_AVAILABLE : std_logic;
 
-constant clk_period : time := 10 ns;
+constant clck_period : time := 10 ns;
 
 
 begin
@@ -69,40 +63,76 @@ begin
         din => din_TB,
         wr_en => wr_TB,
         rd_en => rd_TB,
-        prog_full_thresh  =>  prog_full_thresh_TB,
+        prog_full_thresh  =>  "0001111100",
         dout  => dout_TB,
         full  => full_TB,
         empty  => empty_TB,
         prog_full => prog_full_TB
        );
-       
-       
-   u2: fifo_generator_1
-        port map(
-        clk => clk_TB,
-        rst => rest_TB,
-        din => din_TB,
-        wr_en => wr_TB,
-        rd_en => rd_TB,
-        prog_full_thresh  =>  prog_full_thresh_TB,
-        dout  => dout_TB,
-        full  => full_TB,
-        empty  => empty_TB,
-        prog_full => prog_full_TB
-       );
-       
-       
-     u3: D_FlipFlop 
-    Port map (
-        clk   => clk_TB,     
-        reset => rest_TB,    
-        D     => D_TB, 
-        Q     => Q_TB
-    );
-    
-       
-       
        
 
+    p_read : process
+ 
+   
+  FILE vectors : text;
+  variable Iline : line;
+  variable I1_var :std_logic_vector (7 downto 0);
+ 
+    begin
+       
+	DATA_AVAILABLE <= '0';
+    file_open (vectors,"C:\Users\HP\Desktop\project\projectVhdlFiltre2D\Filtre2D_Deogracias\Filtre2D_Deogracias.srcs\sources_1\new\Lena128x128g_8bits.dat", read_mode);
+   wait for clck_period*12; 
+    while not endfile(vectors) loop
+      readline (vectors,Iline);
+      read (Iline,I1_var);
+                
+      I1 <= I1_var;
+	  DATA_AVAILABLE <= '1';
+	  
+	  wait for clck_period;
+    end loop;
+    DATA_AVAILABLE <= '0';
+    wait for clck_period;
+    file_close (vectors);
+    wait;
+ end process;
+       
+ clck_process : process
+    begin
+        clk_TB <= '0';
+        wait for clck_period/2;
+        clk_TB <= '1';
+        wait for clck_period/2;
+        
+        
+        
+    end process;
+       
+ sim: process
+    begin
+        
+       
+        rest_TB <= '1';
+        wr_TB <= '0';
+        
+     
+        wait for clck_period;
+        rest_TB <= '0';
+  
+        wait for clck_period*10;
+        wr_TB <= '1';
+        rd_TB <= prog_full_TB;
+ 
+        wait for clck_period*500;
+        wr_TB <= '0';
+        
+ 
+        wait;                                                                                      
+
+ end process sim;
+din_TB <= I1;
+      
+      CLK <= clk_TB;
 
 end Behavioral;

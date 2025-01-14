@@ -1,6 +1,10 @@
 # compile verilog/system verilog design source files
+verilog fifo_generator_v13_2_5  \
+"../../../../Filtre2D_Deogracias.ip_user_files/ipstatic/simulation/fifo_generator_vlog_beh.v" \
+"../../../../Filtre2D_Deogracias.ip_user_files/ipstatic/hdl/fifo_generator_v13_2_rfs.v" \
+
 verilog xil_defaultlib  \
-"../../../../Filtre2D_Deogracias.srcs/sources_1/ip/fifo_generator_1/sim/fifo_generator_1.v" \
+"../../../../Filtre2D_Deogracias.gen/sources_1/ip/fifo_generator_1/sim/fifo_generator_1.v" \
 
 # compile glbl module
 verilog xil_defaultlib "glbl.v"

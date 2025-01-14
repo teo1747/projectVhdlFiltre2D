@@ -11,7 +11,8 @@ entity Memory_block is
         rst  : in  STD_LOGIC;      
         din  : in  STD_LOGIC_VECTOR(7 downto 0); 
         dout : out STD_LOGIC_VECTOR(7 downto 0); 
-        dout_filtert : out STD_LOGIC_VECTOR(7 downto 0);  
+        dout_filtert : out STD_LOGIC_VECTOR(7 downto 0);
+        dout_filtert1 : out STD_LOGIC_VECTOR(7 downto 0);   
         wr_en : in STD_LOGIC             
     );
     
@@ -29,6 +30,7 @@ signal df1, df2, df3 : STD_LOGIC_VECTOR(7 downto 0);
 signal df4, df5, df6 : STD_LOGIC_VECTOR(7 downto 0);
 signal df7, df8, df9 : STD_LOGIC_VECTOR(7 downto 0);
 signal dinout: STD_LOGIC_VECTOR(7 downto 0);
+signal dinout1: STD_LOGIC_VECTOR(7 downto 0);
 
 signal din_1 : std_logic_vector(7 downto 0);
 signal dout_f1: std_logic_vector(7 downto 0);
@@ -49,8 +51,10 @@ signal prog_full2 : std_logic;
 signal ten_cycles : std_logic;
 signal enable : std_logic;
 signal enable1: std_logic;
+signal enable2: std_logic;
 signal done_s : std_logic;
 signal done_s1 : std_logic;
+signal done_s2 : std_logic;
 signal enable_fd1 : std_logic := '0';
 signal enable_fd2 : std_logic := '0';
 signal enable_fd3 : std_logic := '0';
@@ -135,7 +139,18 @@ component Filter_3x3 is
         dout : out STD_LOGIC_VECTOR(7 downto 0)                  
     );
 
-end component;    
+end component;  
+
+component Gaussian_filter is
+Port (  clk  : in  STD_LOGIC;      
+        rst  : in  STD_LOGIC;
+        en  : in  STD_LOGIC;
+        p00, p01, p02 : in std_logic_vector(7 downto 0); 
+        p10, p11, p12 : in std_logic_vector(7 downto 0); 
+        p20, p21, p22 : in std_logic_vector(7 downto 0); 
+        output_pixel  : out std_logic_vector(7 downto 0) 
+        );
+end component;  
     
 
 begin
@@ -276,6 +291,17 @@ begin
         done => done_s                               
     );
     
+ compt3: Clock_Counter 
+    generic map(
+         CYCLE_COUNT => 2 
+    )
+    Port map (
+        clk   => clk,             
+        reset => rst,             
+        enable => enable2,             
+        done => done_s2                               
+    );   
+    
     
  filter: Filter_3x3
  
@@ -294,6 +320,23 @@ begin
         din1  => df1,  
         dout => dinout                  
     );
+    
+ filter1: Gaussian_filter
+Port map (
+        clk    => clk,    
+        rst   => rst,
+        en  => en,
+        p00 => df9,
+        p01 => df8,
+        p02 => df7, 
+        p10 => df6, 
+        p11 => df5,
+        p12 => df4, 
+        p20 => df3,
+        p21 => df2, 
+        p22 => df1, 
+        output_pixel   => dinout1
+        );
 
  
          
@@ -416,12 +459,14 @@ begin
                                                  enable_fd3 <= '1';
                                                  enable_fd2 <= '1';
                                                  enable_fd1 <= '1';
-                                                 enable1 <= '1';
-                                                 if (done_s = '0') 
+                                                 enable2 <= '1';
+                                                 if (done_s2 = '0') 
                                                       then
+                                                                                                    
                                                          STAGE <= STAGE6;
                                                       else
                                                          STAGE <= STAGE7;
+                                                         enable2 <= '0';
                                                  end if;
                                                  
                                       when STAGE7 =>             
@@ -466,7 +511,9 @@ begin
                 then 
                   if(flag = '1')
                     then
-                    dout_filtert <=  dinout;
+                    
+                    dout_filtert <=  dinout;                   
+                    dout_filtert1 <=  dinout1;   
                   end if;   
            end if; 
      end process;    
